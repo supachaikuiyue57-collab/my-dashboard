@@ -1,0 +1,1101 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="MyHub">
+<meta name="theme-color" content="#0e0f11">
+<title>MyHub</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0f11;
+    --surface: #16181c;
+    --surface2: #1e2127;
+    --border: rgba(255,255,255,0.07);
+    --text: #f0efe8;
+    --muted: #7a7d85;
+    --teal: #2dd4a0;
+    --teal-dim: rgba(45,212,160,0.12);
+    --amber: #f5a623;
+    --amber-dim: rgba(245,166,35,0.12);
+    --coral: #f06b5d;
+    --coral-dim: rgba(240,107,93,0.12);
+    --blue: #6b9fff;
+    --blue-dim: rgba(107,159,255,0.12);
+    --purple: #a78bfa;
+    --purple-dim: rgba(167,139,250,0.12);
+    --radius: 14px;
+    --font-display: 'DM Serif Display', serif;
+    --font-body: 'DM Sans', sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font-body); font-size: 14px; min-height: 100vh; }
+
+  /* Layout */
+  .shell { display: flex; min-height: 100vh; }
+  .sidebar { width: 220px; flex-shrink: 0; background: var(--surface); border-right: 1px solid var(--border); padding: 24px 0; display: flex; flex-direction: column; }
+  .main { flex: 1; overflow: auto; }
+  .page { display: none; padding: 32px; max-width: 960px; }
+  .page.active { display: block; }
+
+  /* Sidebar */
+  .logo { font-family: var(--font-display); font-size: 20px; color: var(--text); padding: 0 20px 24px; letter-spacing: -0.3px; }
+  .logo span { color: var(--teal); }
+  .nav-section { font-size: 10px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; padding: 12px 20px 6px; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 20px; cursor: pointer; color: var(--muted); font-size: 13.5px; border-left: 2px solid transparent; transition: all 0.15s; }
+  .nav-item:hover { color: var(--text); background: rgba(255,255,255,0.03); }
+  .nav-item.active { color: var(--text); border-left-color: var(--teal); background: rgba(45,212,160,0.06); }
+  .nav-icon { width: 16px; height: 16px; flex-shrink: 0; }
+
+  /* Cards */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+  .card-sm { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+
+  /* Typography */
+  h1 { font-family: var(--font-display); font-size: 28px; font-weight: 400; letter-spacing: -0.5px; margin-bottom: 4px; }
+  h2 { font-size: 15px; font-weight: 500; margin-bottom: 14px; }
+  h3 { font-size: 13px; font-weight: 500; color: var(--muted); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.06em; }
+  .subtitle { color: var(--muted); font-size: 13px; margin-bottom: 24px; }
+  .label { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+  .value { font-size: 22px; font-weight: 500; }
+  .value-sm { font-size: 16px; font-weight: 500; }
+
+  /* Metric cards */
+  .metric { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+  .metric .label { font-size: 11px; color: var(--muted); margin-bottom: 6px; }
+  .metric .value { font-size: 24px; font-weight: 500; }
+  .metric .unit { font-size: 12px; color: var(--muted); margin-left: 4px; }
+  .metric .change { font-size: 11px; margin-top: 4px; }
+  .change.up { color: var(--teal); }
+  .change.down { color: var(--coral); }
+
+  /* Forms */
+  .form-row { display: flex; gap: 10px; margin-bottom: 10px; align-items: flex-end; }
+  .form-group { display: flex; flex-direction: column; gap: 5px; flex: 1; }
+  .form-group label { font-size: 12px; color: var(--muted); }
+  input, select, textarea { background: var(--surface2); border: 1px solid var(--border); color: var(--text); font-family: var(--font-body); font-size: 13px; border-radius: 8px; padding: 9px 12px; width: 100%; outline: none; transition: border 0.15s; }
+  input:focus, select:focus { border-color: var(--teal); }
+  select option { background: var(--surface2); }
+  textarea { resize: vertical; min-height: 60px; }
+
+  /* Buttons */
+  .btn { padding: 9px 18px; border-radius: 8px; font-family: var(--font-body); font-size: 13px; font-weight: 500; cursor: pointer; border: none; transition: all 0.15s; }
+  .btn-primary { background: var(--teal); color: #0a1a14; }
+  .btn-primary:hover { opacity: 0.9; }
+  .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--muted); }
+  .btn-ghost:hover { border-color: rgba(255,255,255,0.2); color: var(--text); }
+  .btn-sm { padding: 6px 12px; font-size: 12px; }
+  .btn-danger { background: var(--coral-dim); color: var(--coral); border: 1px solid rgba(240,107,93,0.2); }
+
+  /* Tags / Badges */
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 500; }
+  .badge-teal { background: var(--teal-dim); color: var(--teal); }
+  .badge-amber { background: var(--amber-dim); color: var(--amber); }
+  .badge-coral { background: var(--coral-dim); color: var(--coral); }
+  .badge-blue { background: var(--blue-dim); color: var(--blue); }
+  .badge-purple { background: var(--purple-dim); color: var(--purple); }
+
+  /* Progress bar */
+  .progress-wrap { background: var(--surface2); border-radius: 99px; height: 6px; overflow: hidden; }
+  .progress-bar { height: 100%; border-radius: 99px; transition: width 0.4s; }
+
+  /* Table */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; }
+  th { text-align: left; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; padding: 10px 14px; border-bottom: 1px solid var(--border); }
+  td { padding: 11px 14px; border-bottom: 1px solid var(--border); font-size: 13px; color: var(--text); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+
+  /* Section spacing */
+  .section { margin-bottom: 28px; }
+  .row { display: flex; gap: 14px; margin-bottom: 14px; }
+  .divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+
+  /* Focus timer */
+  .timer-display { font-family: var(--font-display); font-size: 64px; color: var(--text); text-align: center; letter-spacing: -2px; line-height: 1; margin: 24px 0 8px; }
+  .timer-label { text-align: center; color: var(--muted); font-size: 13px; margin-bottom: 24px; }
+  .timer-controls { display: flex; gap: 10px; justify-content: center; }
+  .timer-ring { width: 160px; height: 160px; position: relative; margin: 0 auto 16px; }
+  .timer-ring svg { transform: rotate(-90deg); }
+  .timer-ring .ring-bg { fill: none; stroke: var(--surface2); stroke-width: 8; }
+  .timer-ring .ring-fg { fill: none; stroke: var(--teal); stroke-width: 8; stroke-linecap: round; transition: stroke-dashoffset 1s linear; }
+  .timer-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); text-align: center; }
+  .timer-center .mins { font-family: var(--font-display); font-size: 36px; line-height: 1; }
+  .timer-center .secs { font-size: 13px; color: var(--muted); }
+
+  /* Chart bars */
+  .bar-chart { display: flex; align-items: flex-end; gap: 8px; height: 100px; margin-top: 10px; }
+  .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; }
+  .bar { width: 100%; border-radius: 4px 4px 0 0; min-height: 4px; transition: height 0.4s; }
+  .bar-lbl { font-size: 10px; color: var(--muted); }
+
+  /* Habit tracker dots */
+  .habit-dots { display: flex; gap: 5px; flex-wrap: wrap; }
+  .dot { width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--border); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 10px; color: var(--muted); transition: all 0.15s; }
+  .dot.done { background: var(--teal-dim); border-color: var(--teal); color: var(--teal); }
+  .dot:hover { border-color: rgba(255,255,255,0.2); }
+
+  /* Toast */
+  .toast { position: fixed; bottom: 24px; right: 24px; background: var(--surface); border: 1px solid var(--teal); color: var(--teal); padding: 10px 18px; border-radius: 10px; font-size: 13px; opacity: 0; transform: translateY(10px); transition: all 0.25s; pointer-events: none; z-index: 999; }
+  .toast.show { opacity: 1; transform: translateY(0); }
+
+  /* ===== MOBILE / iOS RESPONSIVE ===== */
+
+  /* Safe area support for iPhone notch/home bar */
+  .shell { min-height: 100dvh; }
+  .main { padding-bottom: env(safe-area-inset-bottom); }
+  .bottomnav { padding-bottom: calc(8px + env(safe-area-inset-bottom)); }
+
+  /* Tablet (768px and below) */
+  @media(max-width: 768px) {
+    .grid-4 { grid-template-columns: 1fr 1fr; }
+    .grid-3 { grid-template-columns: 1fr 1fr; }
+    .page { padding: 16px; }
+    .row { flex-direction: column; }
+    h1 { font-size: 22px; }
+  }
+
+  /* Mobile (480px and below) — iPhone layout */
+  @media(max-width: 480px) {
+    /* Hide sidebar, use bottom nav instead */
+    .sidebar { display: none; }
+    .shell { flex-direction: column; }
+    .main { flex: 1; padding-bottom: 70px; }
+
+    /* Bottom navigation bar */
+    .bottomnav {
+      display: flex !important;
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      z-index: 100;
+      padding: 8px 4px calc(8px + env(safe-area-inset-bottom));
+      gap: 0;
+    }
+    .bnav-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      padding: 6px 4px;
+      cursor: pointer;
+      color: var(--muted);
+      font-size: 10px;
+      border-radius: 8px;
+      transition: color 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .bnav-item.active { color: var(--teal); }
+    .bnav-item svg { width: 20px; height: 20px; }
+
+    /* Pages */
+    .page { padding: 16px 14px 12px; max-width: 100%; }
+    h1 { font-size: 20px; margin-bottom: 2px; }
+    .subtitle { font-size: 12px; margin-bottom: 16px; }
+
+    /* Grids stack to 2 cols on mobile */
+    .grid-4 { grid-template-columns: 1fr 1fr; gap: 8px; }
+    .grid-3 { grid-template-columns: 1fr 1fr; gap: 8px; }
+    .grid-2 { grid-template-columns: 1fr; gap: 8px; }
+
+    /* Cards */
+    .card { padding: 14px; border-radius: 12px; }
+    .metric { padding: 12px; border-radius: 10px; }
+    .metric .value { font-size: 20px; }
+
+    /* Forms — stack vertically on mobile */
+    .form-row { flex-direction: column; gap: 8px; }
+    .form-group { width: 100%; }
+    input, select { font-size: 16px !important; /* prevent iOS zoom */ padding: 10px 12px; border-radius: 10px; }
+    .btn { padding: 11px 18px; font-size: 14px; border-radius: 10px; }
+    .btn-sm { padding: 8px 12px; font-size: 12px; }
+
+    /* Timer */
+    .timer-ring { width: 180px; height: 180px; }
+    .timer-ring svg { width: 180px; height: 180px; }
+    .timer-center .mins { font-size: 40px; }
+    .timer-controls { gap: 12px; }
+    .timer-controls .btn { min-width: 90px; }
+
+    /* Focus mode buttons wrap */
+    #page-focus .row { flex-direction: column; }
+
+    /* Tables scroll horizontally */
+    .table-wrap { -webkit-overflow-scrolling: touch; }
+    td, th { padding: 10px 10px; font-size: 12px; white-space: nowrap; }
+
+    /* Section spacing */
+    .section { margin-bottom: 16px; }
+    .row { gap: 10px; margin-bottom: 10px; }
+
+    /* Bar chart */
+    .bar-chart { height: 80px; gap: 5px; }
+    .bar-lbl { font-size: 9px; }
+
+    /* Toast above bottom nav */
+    .toast { bottom: calc(76px + env(safe-area-inset-bottom)); right: 14px; left: 14px; text-align: center; }
+  }
+
+  /* Hide bottom nav on desktop */
+  .bottomnav { display: none; }
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="logo">My<span>Hub</span></div>
+    <div class="nav-section">ภาพรวม</div>
+    <div class="nav-item active" onclick="nav('overview',this,'sidebar')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1.5" fill="currentColor" opacity=".7"/><rect x="9" y="1" width="6" height="6" rx="1.5" fill="currentColor" opacity=".7"/><rect x="1" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity=".7"/><rect x="9" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity=".7"/></svg>
+      <span>Dashboard</span>
+    </div>
+    <div class="nav-section">เวลา & งาน</div>
+    <div class="nav-item" onclick="nav('schedule',this,'sidebar')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><rect x="1.5" y="2.5" width="13" height="12" rx="2" stroke="currentColor" stroke-width="1.3"/><path d="M5 1.5v2M11 1.5v2M1.5 6h13" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      <span>ตารางเวลา</span>
+    </div>
+    <div class="nav-item" onclick="nav('focus',this,'sidebar')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.3"/><path d="M8 5v3l2 1.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      <span>โฟกัส</span>
+    </div>
+    <div class="nav-item" onclick="nav('tasks',this,'sidebar')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><path d="M3 5h10M3 8h7M3 11h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      <span>งาน / Todo</span>
+    </div>
+    <div class="nav-section">สุขภาพ</div>
+    <div class="nav-item" onclick="nav('fitness',this,'sidebar')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><path d="M1 8h2l1.5-4 2 8 2-6 1.5 2H15" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>ออกกำลังกาย</span>
+    </div>
+    <div class="nav-item" onclick="nav('nutrition',this,'sidebar')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><path d="M8 2C5.24 2 3 4.24 3 7c0 2.12 1.3 3.93 3.17 4.71L6 14h4l-.17-2.29C11.7 10.93 13 9.12 13 7c0-2.76-2.24-5-5-5z" stroke="currentColor" stroke-width="1.3"/></svg>
+      <span>โภชนาการ</span>
+    </div>
+    <div class="nav-item" onclick="nav('body',this,'sidebar')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="3.5" r="2" stroke="currentColor" stroke-width="1.3"/><path d="M4 14v-3.5C4 8.57 5.79 7 8 7s4 1.57 4 3.5V14" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      <span>ข้อมูลร่างกาย</span>
+    </div>
+    <div class="nav-section">รายงาน</div>
+    <div class="nav-item" onclick="nav('report',this,'sidebar')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><path d="M2 12l3.5-4 3 3L12 5l2 2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>รายงาน</span>
+    </div>
+  </nav>
+
+  <!-- Bottom navigation (mobile only) -->
+  <div class="bottomnav" id="bottomnav">
+    <div class="bnav-item active" onclick="nav('overview',this,'bnav')">
+      <svg viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1.5" fill="currentColor" opacity=".8"/><rect x="9" y="1" width="6" height="6" rx="1.5" fill="currentColor" opacity=".8"/><rect x="1" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity=".8"/><rect x="9" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity=".8"/></svg>
+      หน้าหลัก
+    </div>
+    <div class="bnav-item" onclick="nav('tasks',this,'bnav')">
+      <svg viewBox="0 0 16 16" fill="none"><path d="M3 5h10M3 8h7M3 11h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      งาน
+    </div>
+    <div class="bnav-item" onclick="nav('focus',this,'bnav')">
+      <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.3"/><path d="M8 5v3l2 1.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      โฟกัส
+    </div>
+    <div class="bnav-item" onclick="nav('fitness',this,'bnav')">
+      <svg viewBox="0 0 16 16" fill="none"><path d="M1 8h2l1.5-4 2 8 2-6 1.5 2H15" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      กีฬา
+    </div>
+    <div class="bnav-item" onclick="nav('report',this,'bnav')">
+      <svg viewBox="0 0 16 16" fill="none"><path d="M2 12l3.5-4 3 3L12 5l2 2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      รายงาน
+    </div>
+  </div>
+
+  <!-- Main content -->
+  <main class="main">
+
+    <!-- OVERVIEW -->
+    <div id="page-overview" class="page active">
+      <h1>สวัสดี <span style="color:var(--teal)">คุณ Chai</span></h1>
+      <p class="subtitle" id="today-date"></p>
+      <div class="section grid-4" id="overview-metrics"></div>
+      <div class="row">
+        <div style="flex:1.2" class="card">
+          <h3>งานวันนี้</h3>
+          <div id="ov-tasks"></div>
+        </div>
+        <div style="flex:1" class="card">
+          <h3>นิสัยประจำวัน</h3>
+          <div id="ov-habits"></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>บันทึกออกกำลังกาย 7 วัน</h3>
+        <div class="bar-chart" id="ov-workout-chart"></div>
+        <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;" id="ov-workout-legend"></div>
+      </div>
+    </div>
+
+    <!-- SCHEDULE -->
+    <div id="page-schedule" class="page">
+      <h1>ตารางเวลา</h1>
+      <p class="subtitle">วางแผนและติดตามกิจกรรมประจำวัน</p>
+      <div class="row">
+        <div class="card" style="flex:1">
+          <h2>เพิ่มกิจกรรม</h2>
+          <div class="form-row">
+            <div class="form-group" style="flex:2">
+              <label>ชื่อกิจกรรม</label>
+              <input id="ev-title" placeholder="เช่น วิ่ง, ประชุม, อ่านหนังสือ">
+            </div>
+            <div class="form-group">
+              <label>วันที่</label>
+              <input id="ev-date" type="date">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>เวลาเริ่ม</label>
+              <input id="ev-start" type="time">
+            </div>
+            <div class="form-group">
+              <label>เวลาจบ</label>
+              <input id="ev-end" type="time">
+            </div>
+            <div class="form-group">
+              <label>ประเภท</label>
+              <select id="ev-type">
+                <option value="work">งาน</option>
+                <option value="exercise">ออกกำลังกาย</option>
+                <option value="personal">ส่วนตัว</option>
+                <option value="focus">โฟกัส</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="addEvent()">+ เพิ่มกิจกรรม</button>
+        </div>
+      </div>
+      <div class="card">
+        <h2>กิจกรรมทั้งหมด</h2>
+        <div class="table-wrap"><table>
+          <thead><tr><th>วันที่</th><th>กิจกรรม</th><th>เวลา</th><th>ประเภท</th><th></th></tr></thead>
+          <tbody id="events-table"></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- FOCUS -->
+    <div id="page-focus" class="page">
+      <h1>โฟกัส</h1>
+      <p class="subtitle">Pomodoro timer ช่วยให้จดจ่อกับงาน</p>
+      <div class="row">
+        <div class="card" style="flex:1; text-align:center">
+          <div style="margin-bottom:10px">
+            <span id="focus-mode-label" style="font-size:13px;color:var(--muted)">โฟกัส 25 นาที</span>
+          </div>
+          <div class="timer-ring">
+            <svg width="160" height="160" viewBox="0 0 160 160">
+              <circle class="ring-bg" cx="80" cy="80" r="68"/>
+              <circle class="ring-fg" id="timer-ring-fg" cx="80" cy="80" r="68" stroke-dasharray="427" stroke-dashoffset="0"/>
+            </svg>
+            <div class="timer-center">
+              <div class="mins" id="timer-display">25:00</div>
+              <div class="secs" id="timer-status">พร้อม</div>
+            </div>
+          </div>
+          <div class="timer-controls">
+            <button class="btn btn-primary" id="timer-btn" onclick="toggleTimer()">เริ่ม</button>
+            <button class="btn btn-ghost" onclick="resetTimer()">รีเซ็ต</button>
+          </div>
+          <div style="margin-top:20px;display:flex;gap:8px;justify-content:center">
+            <button class="btn btn-ghost btn-sm" onclick="setMode(25,'work')">โฟกัส 25</button>
+            <button class="btn btn-ghost btn-sm" onclick="setMode(50,'deep')">Deep 50</button>
+            <button class="btn btn-ghost btn-sm" onclick="setMode(5,'break')">พัก 5</button>
+            <button class="btn btn-ghost btn-sm" onclick="setMode(15,'break')">พัก 15</button>
+          </div>
+        </div>
+        <div style="flex:1">
+          <div class="card" style="margin-bottom:14px">
+            <h3>session วันนี้</h3>
+            <div class="grid-2">
+              <div class="metric"><div class="label">รอบที่เสร็จ</div><div class="value" id="focus-sessions">0</div></div>
+              <div class="metric"><div class="label">นาทีที่โฟกัส</div><div class="value" id="focus-minutes">0</div></div>
+            </div>
+          </div>
+          <div class="card">
+            <h3>ประวัติโฟกัส 7 วัน</h3>
+            <div class="bar-chart" id="focus-chart"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TASKS -->
+    <div id="page-tasks" class="page">
+      <h1>งาน / Todo</h1>
+      <p class="subtitle">จัดการงานและติดตามความคืบหน้า</p>
+      <div class="card section">
+        <div class="form-row">
+          <div class="form-group" style="flex:3">
+            <label>ชื่องาน</label>
+            <input id="task-title" placeholder="งานที่ต้องทำ...">
+          </div>
+          <div class="form-group">
+            <label>ความสำคัญ</label>
+            <select id="task-priority">
+              <option value="high">สูง</option>
+              <option value="medium" selected>กลาง</option>
+              <option value="low">ต่ำ</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>วันครบกำหนด</label>
+            <input id="task-due" type="date">
+          </div>
+          <div style="padding-bottom:1px">
+            <button class="btn btn-primary" onclick="addTask()">+ เพิ่ม</button>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div style="flex:1" class="card">
+          <h3>ยังไม่เสร็จ</h3>
+          <div id="tasks-active"></div>
+        </div>
+        <div style="flex:1" class="card">
+          <h3>เสร็จแล้ว</h3>
+          <div id="tasks-done"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FITNESS -->
+    <div id="page-fitness" class="page">
+      <h1>ออกกำลังกาย</h1>
+      <p class="subtitle">บันทึกการออกกำลังกายและติดตาม VO₂ max</p>
+      <div class="card section">
+        <h2>บันทึกออกกำลังกาย</h2>
+        <div class="form-row">
+          <div class="form-group">
+            <label>วันที่</label>
+            <input id="fit-date" type="date">
+          </div>
+          <div class="form-group" style="flex:2">
+            <label>ประเภท</label>
+            <select id="fit-type">
+              <option value="running">วิ่ง</option>
+              <option value="cycling">จักรยาน</option>
+              <option value="swimming">ว่ายน้ำ</option>
+              <option value="strength">เวทเทรนนิ่ง</option>
+              <option value="hiit">HIIT</option>
+              <option value="yoga">โยคะ</option>
+              <option value="walk">เดิน</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>ระยะ (กม.)</label>
+            <input id="fit-dist" type="number" step="0.1" placeholder="0">
+          </div>
+          <div class="form-group">
+            <label>เวลา (นาที)</label>
+            <input id="fit-dur" type="number" placeholder="30">
+          </div>
+          <div class="form-group">
+            <label>ชีพจรเฉลี่ย</label>
+            <input id="fit-hr" type="number" placeholder="140">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>VO₂ max (ถ้ามี)</label>
+            <input id="fit-vo2" type="number" step="0.1" placeholder="เช่น 45.2">
+          </div>
+          <div class="form-group" style="flex:3">
+            <label>หมายเหตุ</label>
+            <input id="fit-note" placeholder="ความรู้สึก, สภาพอากาศ...">
+          </div>
+          <div style="padding-bottom:1px">
+            <button class="btn btn-primary" onclick="addWorkout()">บันทึก</button>
+          </div>
+        </div>
+      </div>
+      <div class="grid-4 section" id="fit-metrics"></div>
+      <div class="card section">
+        <h2>ประวัติการออกกำลังกาย</h2>
+        <div class="table-wrap"><table>
+          <thead><tr><th>วันที่</th><th>ประเภท</th><th>ระยะ</th><th>เวลา</th><th>ชีพจร</th><th>VO₂ max</th><th></th></tr></thead>
+          <tbody id="workout-table"></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- NUTRITION -->
+    <div id="page-nutrition" class="page">
+      <h1>โภชนาการ</h1>
+      <p class="subtitle">ติดตามแคลอรี่และสารอาหาร</p>
+      <div class="card section">
+        <h2>บันทึกอาหาร</h2>
+        <div class="form-row">
+          <div class="form-group">
+            <label>วันที่</label>
+            <input id="nut-date" type="date">
+          </div>
+          <div class="form-group">
+            <label>มื้อ</label>
+            <select id="nut-meal">
+              <option value="breakfast">เช้า</option>
+              <option value="lunch">กลางวัน</option>
+              <option value="dinner">เย็น</option>
+              <option value="snack">ของว่าง</option>
+            </select>
+          </div>
+          <div class="form-group" style="flex:2">
+            <label>รายการอาหาร</label>
+            <input id="nut-food" placeholder="เช่น ข้าวกะเพราหมู, กล้วย">
+          </div>
+          <div class="form-group">
+            <label>แคลอรี่ (kcal)</label>
+            <input id="nut-cal" type="number" placeholder="0">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>โปรตีน (g)</label>
+            <input id="nut-protein" type="number" placeholder="0">
+          </div>
+          <div class="form-group">
+            <label>คาร์บ (g)</label>
+            <input id="nut-carb" type="number" placeholder="0">
+          </div>
+          <div class="form-group">
+            <label>ไขมัน (g)</label>
+            <input id="nut-fat" type="number" placeholder="0">
+          </div>
+          <div class="form-group">
+            <label>น้ำ (ml)</label>
+            <input id="nut-water" type="number" placeholder="0">
+          </div>
+          <div style="padding-bottom:1px">
+            <button class="btn btn-primary" onclick="addFood()">บันทึก</button>
+          </div>
+        </div>
+      </div>
+      <div class="grid-4 section" id="nut-metrics"></div>
+      <div class="card section">
+        <h2>บันทึกอาหารวันนี้</h2>
+        <div class="table-wrap"><table>
+          <thead><tr><th>มื้อ</th><th>รายการ</th><th>แคลอรี่</th><th>โปรตีน</th><th>คาร์บ</th><th>ไขมัน</th><th></th></tr></thead>
+          <tbody id="food-table"></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- BODY -->
+    <div id="page-body" class="page">
+      <h1>ข้อมูลร่างกาย</h1>
+      <p class="subtitle">ติดตามน้ำหนัก ไขมัน และค่าสุขภาพ</p>
+      <div class="card section">
+        <h2>บันทึกค่าร่างกาย</h2>
+        <div class="form-row">
+          <div class="form-group">
+            <label>วันที่</label>
+            <input id="body-date" type="date">
+          </div>
+          <div class="form-group">
+            <label>น้ำหนัก (กก.)</label>
+            <input id="body-weight" type="number" step="0.1" placeholder="70.0">
+          </div>
+          <div class="form-group">
+            <label>ไขมันร่างกาย (%)</label>
+            <input id="body-fat" type="number" step="0.1" placeholder="20.0">
+          </div>
+          <div class="form-group">
+            <label>รอบเอว (ซม.)</label>
+            <input id="body-waist" type="number" step="0.5" placeholder="80">
+          </div>
+          <div class="form-group">
+            <label>ความดันโลหิต</label>
+            <input id="body-bp" placeholder="120/80">
+          </div>
+          <div style="padding-bottom:1px">
+            <button class="btn btn-primary" onclick="addBodyLog()">บันทึก</button>
+          </div>
+        </div>
+      </div>
+      <div class="grid-4 section" id="body-metrics"></div>
+      <div class="card section">
+        <h3>ประวัติน้ำหนัก</h3>
+        <div class="bar-chart" id="weight-chart"></div>
+      </div>
+      <div class="card">
+        <h2>ประวัติทั้งหมด</h2>
+        <div class="table-wrap"><table>
+          <thead><tr><th>วันที่</th><th>น้ำหนัก</th><th>ไขมัน%</th><th>รอบเอว</th><th>ความดัน</th><th>BMI</th><th></th></tr></thead>
+          <tbody id="body-table"></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- REPORT -->
+    <div id="page-report" class="page">
+      <h1>รายงาน</h1>
+      <p class="subtitle">วิเคราะห์ข้อมูลสุขภาพและ productivity ของคุณ</p>
+      <div class="grid-2 section" id="report-cards"></div>
+      <div class="row">
+        <div class="card" style="flex:1">
+          <h3>สรุปออกกำลังกายรายสัปดาห์</h3>
+          <div id="report-fitness"></div>
+        </div>
+        <div class="card" style="flex:1">
+          <h3>สรุปโภชนาการรายสัปดาห์</h3>
+          <div id="report-nutrition"></div>
+        </div>
+      </div>
+      <div class="card section">
+        <h3>เป้าหมายและความคืบหน้า</h3>
+        <div id="report-goals"></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ========== DATABASE (localStorage) ==========
+const DB = {
+  get: (k) => { try { return JSON.parse(localStorage.getItem('myhub_'+k)) || []; } catch { return []; } },
+  getObj: (k, def={}) => { try { return JSON.parse(localStorage.getItem('myhub_'+k)) || def; } catch { return def; } },
+  set: (k, v) => localStorage.setItem('myhub_'+k, JSON.stringify(v)),
+  push: (k, v) => { const arr = DB.get(k); arr.unshift(v); DB.set(k, arr); },
+  del: (k, id) => { DB.set(k, DB.get(k).filter(x => x.id !== id)); }
+};
+
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2);
+const today = () => new Date().toISOString().slice(0,10);
+const fmt = d => new Date(d+'T00:00:00').toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'2-digit'});
+const typeColors = {work:'blue',exercise:'teal',personal:'purple',focus:'amber',running:'teal',cycling:'blue',swimming:'blue',strength:'coral',hiit:'coral',yoga:'purple',walk:'teal'};
+const typeLabel = {work:'งาน',exercise:'ออกกำลังกาย',personal:'ส่วนตัว',focus:'โฟกัส',running:'วิ่ง',cycling:'จักรยาน',swimming:'ว่ายน้ำ',strength:'เวท',hiit:'HIIT',yoga:'โยคะ',walk:'เดิน',breakfast:'เช้า',lunch:'กลางวัน',dinner:'เย็น',snack:'ของว่าง',high:'สูง',medium:'กลาง',low:'ต่ำ'};
+const priorityColors = {high:'coral',medium:'amber',low:'teal'};
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ========== NAVIGATION ==========
+function nav(page, el, source) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  if (source === 'bnav') {
+    document.querySelectorAll('.bnav-item').forEach(n => n.classList.remove('active'));
+    if (el) el.classList.add('active');
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  } else {
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    if (el) el.classList.add('active');
+    else if (event && event.currentTarget) event.currentTarget.classList.add('active');
+    document.querySelectorAll('.bnav-item').forEach(n => n.classList.remove('active'));
+  }
+  render(page);
+}
+
+// ========== RENDER FUNCTIONS ==========
+function render(page) {
+  if (page==='overview') renderOverview();
+  if (page==='schedule') renderEvents();
+  if (page==='tasks') renderTasks();
+  if (page==='fitness') renderFitness();
+  if (page==='nutrition') renderNutrition();
+  if (page==='body') renderBody();
+  if (page==='report') renderReport();
+}
+
+// --- OVERVIEW ---
+function renderOverview() {
+  document.getElementById('today-date').textContent = new Date().toLocaleDateString('th-TH',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+  const workouts = DB.get('workouts');
+  const bodyLogs = DB.get('bodyLogs');
+  const tasks = DB.get('tasks');
+  const focusSess = DB.getObj('focusSessions', {});
+  const todayFocus = focusSess[today()] || {sessions:0, minutes:0};
+  const latestBody = bodyLogs[0] || {};
+  const todayWorkouts = workouts.filter(w => w.date === today());
+  const totalCalToday = DB.get('foods').filter(f => f.date===today()).reduce((s,f)=>s+(+f.calories||0),0);
+
+  const metrics = [
+    {label:'น้ำหนัก', value: latestBody.weight || '--', unit:'กก.'},
+    {label:'โฟกัสวันนี้', value: todayFocus.minutes, unit:'นาที'},
+    {label:'แคลอรี่วันนี้', value: totalCalToday, unit:'kcal'},
+    {label:'ออกกำลังกาย', value: todayWorkouts.length, unit:'ครั้ง'},
+  ];
+  document.getElementById('overview-metrics').innerHTML = metrics.map(m=>`
+    <div class="metric"><div class="label">${m.label}</div><div class="value">${m.value}<span class="unit">${m.unit}</span></div></div>
+  `).join('');
+
+  // tasks
+  const activeTasks = tasks.filter(t=>!t.done).slice(0,5);
+  document.getElementById('ov-tasks').innerHTML = activeTasks.length ? activeTasks.map(t=>`
+    <div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border)">
+      <div style="width:8px;height:8px;border-radius:50%;background:var(--${priorityColors[t.priority]});flex-shrink:0"></div>
+      <span style="font-size:13px;flex:1">${t.title}</span>
+      ${t.due ? `<span style="font-size:11px;color:var(--muted)">${fmt(t.due)}</span>` : ''}
+    </div>`).join('') : '<p style="color:var(--muted);font-size:13px">ไม่มีงานค้างอยู่</p>';
+
+  // habits
+  const habits = ['ออกกำลังกาย','ดื่มน้ำ 2L','ทานผัก','นอนก่อน 23:00','อ่านหนังสือ'];
+  const habitData = DB.getObj('habits', {});
+  const todayHabits = habitData[today()] || {};
+  document.getElementById('ov-habits').innerHTML = habits.map((h,i)=>`
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border)">
+      <span style="font-size:13px">${h}</span>
+      <button onclick="toggleHabit('${h}')" style="width:24px;height:24px;border-radius:6px;border:1px solid var(--border);background:${todayHabits[h]?'var(--teal)':'transparent'};color:${todayHabits[h]?'#0a1a14':'var(--muted)'};cursor:pointer;font-size:13px">${todayHabits[h]?'✓':''}</button>
+    </div>`).join('');
+
+  // workout chart
+  const days7 = Array.from({length:7},(_,i)=>{const d=new Date();d.setDate(d.getDate()-6+i);return d.toISOString().slice(0,10);});
+  const maxDur = Math.max(...days7.map(d=>workouts.filter(w=>w.date===d).reduce((s,w)=>s+(+w.duration||0),0)),1);
+  document.getElementById('ov-workout-chart').innerHTML = days7.map(d=>{
+    const dur = workouts.filter(w=>w.date===d).reduce((s,w)=>s+(+w.duration||0),0);
+    const h = Math.round((dur/maxDur)*80)+4;
+    const day = new Date(d+'T12:00:00').toLocaleDateString('th-TH',{weekday:'short'});
+    return `<div class="bar-col"><div class="bar" style="height:${h}px;background:${dur>0?'var(--teal)':'var(--surface2)'};"></div><div class="bar-lbl">${day}</div></div>`;
+  }).join('');
+}
+
+function toggleHabit(name) {
+  const habitData = DB.getObj('habits', {});
+  if (!habitData[today()]) habitData[today()] = {};
+  habitData[today()][name] = !habitData[today()][name];
+  DB.set('habits', habitData);
+  renderOverview();
+}
+
+// --- EVENTS ---
+function addEvent() {
+  const title = document.getElementById('ev-title').value.trim();
+  const date = document.getElementById('ev-date').value || today();
+  const start = document.getElementById('ev-start').value;
+  const end = document.getElementById('ev-end').value;
+  const type = document.getElementById('ev-type').value;
+  if (!title) return;
+  DB.push('events', {id:uid(), title, date, start, end, type});
+  document.getElementById('ev-title').value = '';
+  toast('เพิ่มกิจกรรมแล้ว');
+  renderEvents();
+}
+function renderEvents() {
+  const events = DB.get('events');
+  document.getElementById('events-table').innerHTML = events.length ?
+    events.map(e=>`<tr>
+      <td>${fmt(e.date)}</td><td>${e.title}</td>
+      <td>${e.start||'--'} ${e.end?'- '+e.end:''}</td>
+      <td><span class="badge badge-${typeColors[e.type]||'blue'}">${typeLabel[e.type]||e.type}</span></td>
+      <td><button class="btn btn-danger btn-sm" onclick="delEvent('${e.id}')">ลบ</button></td>
+    </tr>`).join('') : '<tr><td colspan="5" style="text-align:center;color:var(--muted)">ยังไม่มีกิจกรรม</td></tr>';
+}
+function delEvent(id) { DB.del('events', id); renderEvents(); toast('ลบแล้ว'); }
+
+// --- TASKS ---
+function addTask() {
+  const title = document.getElementById('task-title').value.trim();
+  const priority = document.getElementById('task-priority').value;
+  const due = document.getElementById('task-due').value;
+  if (!title) return;
+  DB.push('tasks', {id:uid(), title, priority, due, done:false, created:today()});
+  document.getElementById('task-title').value = '';
+  toast('เพิ่มงานแล้ว');
+  renderTasks();
+}
+function toggleTask(id) {
+  const tasks = DB.get('tasks');
+  const t = tasks.find(x=>x.id===id);
+  if (t) { t.done=!t.done; DB.set('tasks', tasks); renderTasks(); }
+}
+function delTask(id) { DB.del('tasks', id); renderTasks(); toast('ลบงานแล้ว'); }
+function renderTasks() {
+  const tasks = DB.get('tasks');
+  const renderList = (arr, el) => {
+    document.getElementById(el).innerHTML = arr.length ? arr.map(t=>`
+      <div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)">
+        <button onclick="toggleTask('${t.id}')" style="width:20px;height:20px;border-radius:50%;border:1.5px solid var(--${priorityColors[t.priority]});background:${t.done?'var(--'+priorityColors[t.priority]+')':'transparent'};color:${t.done?'#000':'transparent'};cursor:pointer;font-size:11px;flex-shrink:0">${t.done?'✓':''}</button>
+        <span style="flex:1;font-size:13px;${t.done?'text-decoration:line-through;color:var(--muted)':''}">${t.title}</span>
+        <span class="badge badge-${priorityColors[t.priority]}">${typeLabel[t.priority]}</span>
+        ${t.due?`<span style="font-size:11px;color:var(--muted)">${fmt(t.due)}</span>`:''}
+        <button class="btn btn-danger btn-sm" onclick="delTask('${t.id}')">ลบ</button>
+      </div>`).join('') : `<p style="color:var(--muted);font-size:13px;padding:12px 0">ว่างอยู่</p>`;
+  };
+  renderList(tasks.filter(t=>!t.done), 'tasks-active');
+  renderList(tasks.filter(t=>t.done), 'tasks-done');
+}
+
+// --- FOCUS TIMER ---
+let timerInterval = null, timerRunning = false, timerSeconds = 25*60, timerTotal = 25*60, timerMode = 'work';
+function setMode(mins, mode) {
+  clearInterval(timerInterval); timerRunning = false;
+  timerMode = mode; timerTotal = mins*60; timerSeconds = timerTotal;
+  document.getElementById('timer-btn').textContent = 'เริ่ม';
+  const labels = {work:'โฟกัส 25 นาที', deep:'Deep work 50 นาที', break:'พักผ่อน'};
+  document.getElementById('focus-mode-label').textContent = labels[mode]||'';
+  updateTimerDisplay();
+}
+function toggleTimer() {
+  if (timerRunning) {
+    clearInterval(timerInterval); timerRunning = false;
+    document.getElementById('timer-btn').textContent = 'ต่อ';
+    document.getElementById('timer-status').textContent = 'หยุดชั่วคราว';
+  } else {
+    timerRunning = true;
+    document.getElementById('timer-btn').textContent = 'หยุด';
+    document.getElementById('timer-status').textContent = 'กำลังโฟกัส...';
+    timerInterval = setInterval(() => {
+      timerSeconds--;
+      updateTimerDisplay();
+      if (timerSeconds <= 0) {
+        clearInterval(timerInterval); timerRunning = false;
+        if (timerMode !== 'break') {
+          const sess = DB.getObj('focusSessions', {});
+          if (!sess[today()]) sess[today()] = {sessions:0, minutes:0};
+          sess[today()].sessions++;
+          sess[today()].minutes += Math.round(timerTotal/60);
+          DB.set('focusSessions', sess);
+          document.getElementById('focus-sessions').textContent = sess[today()].sessions;
+          document.getElementById('focus-minutes').textContent = sess[today()].minutes;
+        }
+        document.getElementById('timer-status').textContent = 'เสร็จแล้ว!';
+        document.getElementById('timer-btn').textContent = 'เริ่มใหม่';
+        toast(timerMode==='break' ? 'หมดเวลาพัก!' : 'โฟกัสครบแล้ว!');
+      }
+    }, 1000);
+  }
+}
+function resetTimer() {
+  clearInterval(timerInterval); timerRunning = false;
+  timerSeconds = timerTotal;
+  document.getElementById('timer-btn').textContent = 'เริ่ม';
+  document.getElementById('timer-status').textContent = 'พร้อม';
+  updateTimerDisplay();
+}
+function updateTimerDisplay() {
+  const m = Math.floor(timerSeconds/60), s = timerSeconds%60;
+  document.getElementById('timer-display').textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  const circ = 2*Math.PI*68;
+  const offset = circ*(1 - timerSeconds/timerTotal);
+  document.getElementById('timer-ring-fg').style.strokeDashoffset = circ - offset;
+}
+function renderFocusStats() {
+  const sess = DB.getObj('focusSessions', {});
+  const todaySess = sess[today()] || {sessions:0, minutes:0};
+  document.getElementById('focus-sessions').textContent = todaySess.sessions;
+  document.getElementById('focus-minutes').textContent = todaySess.minutes;
+  const days7 = Array.from({length:7},(_,i)=>{const d=new Date();d.setDate(d.getDate()-6+i);return d.toISOString().slice(0,10);});
+  const maxMin = Math.max(...days7.map(d=>(sess[d]||{minutes:0}).minutes), 1);
+  document.getElementById('focus-chart').innerHTML = days7.map(d=>{
+    const min = (sess[d]||{minutes:0}).minutes;
+    const h = Math.round((min/maxMin)*80)+4;
+    const day = new Date(d+'T12:00:00').toLocaleDateString('th-TH',{weekday:'short'});
+    return `<div class="bar-col"><div class="bar" style="height:${h}px;background:${min>0?'var(--amber)':'var(--surface2)'};"></div><div class="bar-lbl">${day}</div></div>`;
+  }).join('');
+}
+
+// --- FITNESS ---
+function addWorkout() {
+  const date = document.getElementById('fit-date').value || today();
+  const type = document.getElementById('fit-type').value;
+  const dist = document.getElementById('fit-dist').value;
+  const dur = document.getElementById('fit-dur').value;
+  const hr = document.getElementById('fit-hr').value;
+  const vo2 = document.getElementById('fit-vo2').value;
+  const note = document.getElementById('fit-note').value;
+  if (!dur) return;
+  DB.push('workouts', {id:uid(), date, type, distance:dist, duration:dur, heartRate:hr, vo2max:vo2, note});
+  ['fit-dist','fit-dur','fit-hr','fit-vo2','fit-note'].forEach(id=>document.getElementById(id).value='');
+  toast('บันทึกการออกกำลังกายแล้ว');
+  renderFitness();
+}
+function delWorkout(id) { DB.del('workouts', id); renderFitness(); toast('ลบแล้ว'); }
+function renderFitness() {
+  const workouts = DB.get('workouts');
+  const thisWeek = workouts.filter(w=>{const d=new Date(w.date);const n=new Date();return (n-d)/(86400000)<7;});
+  const totalDist = thisWeek.reduce((s,w)=>s+(+w.distance||0),0);
+  const totalDur = thisWeek.reduce((s,w)=>s+(+w.duration||0),0);
+  const vo2s = workouts.filter(w=>w.vo2max).map(w=>+w.vo2max);
+  const latestVO2 = vo2s[0]||0;
+  const avgHR = workouts.filter(w=>w.heartRate).slice(0,7).reduce((s,w,_,a)=>s+(+w.heartRate)/a.length,0);
+
+  document.getElementById('fit-metrics').innerHTML = [
+    {label:'ระยะสัปดาห์นี้', value:totalDist.toFixed(1), unit:'กม.'},
+    {label:'เวลาสัปดาห์นี้', value:totalDur, unit:'นาที'},
+    {label:'VO₂ max ล่าสุด', value:latestVO2||'--', unit:'ml/kg/min'},
+    {label:'ชีพจรเฉลี่ย', value:Math.round(avgHR)||'--', unit:'bpm'},
+  ].map(m=>`<div class="metric"><div class="label">${m.label}</div><div class="value">${m.value}<span class="unit">${m.unit}</span></div></div>`).join('');
+
+  document.getElementById('workout-table').innerHTML = workouts.length ?
+    workouts.map(w=>`<tr>
+      <td>${fmt(w.date)}</td>
+      <td><span class="badge badge-${typeColors[w.type]||'teal'}">${typeLabel[w.type]||w.type}</span></td>
+      <td>${w.distance||'--'} กม.</td><td>${w.duration||'--'} น.</td>
+      <td>${w.heartRate||'--'} bpm</td><td>${w.vo2max||'--'}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="delWorkout('${w.id}')">ลบ</button></td>
+    </tr>`).join('') : '<tr><td colspan="7" style="text-align:center;color:var(--muted)">ยังไม่มีข้อมูล</td></tr>';
+}
+
+// --- NUTRITION ---
+function addFood() {
+  const date = document.getElementById('nut-date').value || today();
+  const meal = document.getElementById('nut-meal').value;
+  const food = document.getElementById('nut-food').value.trim();
+  const calories = document.getElementById('nut-cal').value;
+  const protein = document.getElementById('nut-protein').value;
+  const carbs = document.getElementById('nut-carb').value;
+  const fat = document.getElementById('nut-fat').value;
+  const water = document.getElementById('nut-water').value;
+  if (!food) return;
+  DB.push('foods', {id:uid(), date, meal, food, calories, protein, carbs, fat, water});
+  ['nut-food','nut-cal','nut-protein','nut-carb','nut-fat','nut-water'].forEach(id=>document.getElementById(id).value='');
+  toast('บันทึกอาหารแล้ว');
+  renderNutrition();
+}
+function delFood(id) { DB.del('foods', id); renderNutrition(); toast('ลบแล้ว'); }
+function renderNutrition() {
+  const foods = DB.get('foods');
+  const todayFoods = foods.filter(f=>f.date===today());
+  const sum = (k) => todayFoods.reduce((s,f)=>s+(+f[k]||0),0);
+  const goalCal = 2000;
+  document.getElementById('nut-metrics').innerHTML = [
+    {label:'แคลอรี่วันนี้', value:sum('calories'), unit:'kcal', goal:goalCal},
+    {label:'โปรตีน', value:sum('protein'), unit:'g'},
+    {label:'คาร์โบไฮเดรต', value:sum('carbs'), unit:'g'},
+    {label:'น้ำ', value:sum('water'), unit:'ml'},
+  ].map(m=>`<div class="metric"><div class="label">${m.label}</div><div class="value">${m.value}<span class="unit">${m.unit}</span></div>${m.goal?`<div class="progress-wrap" style="margin-top:8px"><div class="progress-bar" style="width:${Math.min(100,Math.round(m.value/m.goal*100))}%;background:var(--teal)"></div></div><div style="font-size:11px;color:var(--muted);margin-top:4px">${Math.min(100,Math.round(m.value/m.goal*100))}% ของเป้าหมาย</div>`:''}</div>`).join('');
+
+  document.getElementById('food-table').innerHTML = todayFoods.length ?
+    todayFoods.map(f=>`<tr>
+      <td><span class="badge badge-purple">${typeLabel[f.meal]||f.meal}</span></td>
+      <td>${f.food}</td><td>${f.calories||0} kcal</td>
+      <td>${f.protein||0}g</td><td>${f.carbs||0}g</td><td>${f.fat||0}g</td>
+      <td><button class="btn btn-danger btn-sm" onclick="delFood('${f.id}')">ลบ</button></td>
+    </tr>`).join('') : '<tr><td colspan="7" style="text-align:center;color:var(--muted)">ยังไม่มีรายการอาหารวันนี้</td></tr>';
+}
+
+// --- BODY ---
+function addBodyLog() {
+  const date = document.getElementById('body-date').value || today();
+  const weight = document.getElementById('body-weight').value;
+  const fat = document.getElementById('body-fat').value;
+  const waist = document.getElementById('body-waist').value;
+  const bp = document.getElementById('body-bp').value;
+  if (!weight) return;
+  const height = 170; // default
+  const bmi = weight ? (weight/(height/100)**2).toFixed(1) : '--';
+  DB.push('bodyLogs', {id:uid(), date, weight, fat, waist, bp, bmi});
+  ['body-weight','body-fat','body-waist','body-bp'].forEach(id=>document.getElementById(id).value='');
+  toast('บันทึกข้อมูลร่างกายแล้ว');
+  renderBody();
+}
+function delBodyLog(id) { DB.del('bodyLogs', id); renderBody(); toast('ลบแล้ว'); }
+function renderBody() {
+  const logs = DB.get('bodyLogs');
+  const latest = logs[0]||{};
+  const prev = logs[1]||{};
+  const wChange = latest.weight && prev.weight ? (latest.weight-prev.weight).toFixed(1) : null;
+  const fChange = latest.fat && prev.fat ? (latest.fat-prev.fat).toFixed(1) : null;
+
+  document.getElementById('body-metrics').innerHTML = [
+    {label:'น้ำหนักล่าสุด', value:latest.weight||'--', unit:'กก.', change:wChange},
+    {label:'ไขมันร่างกาย', value:latest.fat||'--', unit:'%', change:fChange},
+    {label:'รอบเอว', value:latest.waist||'--', unit:'ซม.'},
+    {label:'BMI', value:latest.bmi||'--', unit:''},
+  ].map(m=>`<div class="metric"><div class="label">${m.label}</div><div class="value">${m.value}<span class="unit">${m.unit}</span></div>${m.change?`<div class="change ${+m.change<0?'up':'down'}">${+m.change>0?'+':''}${m.change}</div>`:''}</div>`).join('');
+
+  const days = logs.slice(0,7).reverse();
+  const maxW = Math.max(...days.map(d=>+d.weight||0),1);
+  document.getElementById('weight-chart').innerHTML = days.map(d=>{
+    const h = Math.round(((+d.weight||0)/maxW)*80)+4;
+    return `<div class="bar-col"><div class="bar" style="height:${h}px;background:var(--blue);"></div><div class="bar-lbl">${fmt(d.date).split(' ')[0]}</div></div>`;
+  }).join('');
+
+  document.getElementById('body-table').innerHTML = logs.length ?
+    logs.map(l=>`<tr>
+      <td>${fmt(l.date)}</td><td>${l.weight||'--'} กก.</td>
+      <td>${l.fat||'--'}%</td><td>${l.waist||'--'} ซม.</td>
+      <td>${l.bp||'--'}</td><td>${l.bmi||'--'}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="delBodyLog('${l.id}')">ลบ</button></td>
+    </tr>`).join('') : '<tr><td colspan="7" style="text-align:center;color:var(--muted)">ยังไม่มีข้อมูล</td></tr>';
+}
+
+// --- REPORT ---
+function renderReport() {
+  const workouts = DB.get('workouts');
+  const foods = DB.get('foods');
+  const tasks = DB.get('tasks');
+  const bodyLogs = DB.get('bodyLogs');
+  const focusSess = DB.getObj('focusSessions', {});
+  const days7 = Array.from({length:7},(_,i)=>{const d=new Date();d.setDate(d.getDate()-6+i);return d.toISOString().slice(0,10);});
+
+  const wk_workouts = workouts.filter(w=>days7.includes(w.date));
+  const wk_foods = foods.filter(f=>days7.includes(f.date));
+  const wk_focus = days7.reduce((s,d)=>s+((focusSess[d]||{minutes:0}).minutes),0);
+  const completedTasks = tasks.filter(t=>t.done).length;
+  const totalTasks = tasks.length;
+  const latestBody = bodyLogs[0]||{};
+
+  document.getElementById('report-cards').innerHTML = [
+    {label:'ออกกำลังกายสัปดาห์นี้', value:wk_workouts.length+' ครั้ง', color:'teal'},
+    {label:'โฟกัสสัปดาห์นี้', value:wk_focus+' นาที', color:'amber'},
+    {label:'งานเสร็จ/ทั้งหมด', value:`${completedTasks}/${totalTasks}`, color:'purple'},
+    {label:'น้ำหนักปัจจุบัน', value:(latestBody.weight||'--')+' กก.', color:'blue'},
+  ].map(m=>`<div class="card"><div class="label">${m.label}</div><div class="value-sm" style="color:var(--${m.color})">${m.value}</div></div>`).join('');
+
+  // fitness summary
+  const typeCount = {};
+  wk_workouts.forEach(w=>typeCount[w.type]=(typeCount[w.type]||0)+1);
+  document.getElementById('report-fitness').innerHTML = Object.keys(typeCount).length ?
+    Object.entries(typeCount).map(([t,c])=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border)"><span style="font-size:13px">${typeLabel[t]||t}</span><span class="badge badge-${typeColors[t]||'teal'}">${c} ครั้ง</span></div>`).join('') :
+    '<p style="color:var(--muted);font-size:13px">ยังไม่มีข้อมูล</p>';
+
+  // nutrition summary
+  const avgCal = wk_foods.length ? Math.round(wk_foods.reduce((s,f)=>s+(+f.calories||0),0)/7) : 0;
+  const avgProt = wk_foods.length ? Math.round(wk_foods.reduce((s,f)=>s+(+f.protein||0),0)/7) : 0;
+  document.getElementById('report-nutrition').innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border)"><span style="font-size:13px">แคลอรี่เฉลี่ย/วัน</span><span style="font-size:13px;font-weight:500">${avgCal} kcal</span></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border)"><span style="font-size:13px">โปรตีนเฉลี่ย/วัน</span><span style="font-size:13px;font-weight:500">${avgProt} g</span></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0"><span style="font-size:13px">รายการอาหารที่บันทึก</span><span style="font-size:13px;font-weight:500">${wk_foods.length} รายการ</span></div>`;
+
+  // goals
+  const goals = [
+    {name:'ออกกำลังกาย 5 ครั้ง/สัปดาห์', val:Math.min(wk_workouts.length,5), max:5, color:'teal'},
+    {name:'โฟกัส 500 นาที/สัปดาห์', val:Math.min(wk_focus,500), max:500, color:'amber'},
+    {name:'งานเสร็จ', val:completedTasks, max:Math.max(totalTasks,1), color:'purple'},
+  ];
+  document.getElementById('report-goals').innerHTML = goals.map(g=>`
+    <div style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:5px"><span style="font-size:13px">${g.name}</span><span style="font-size:12px;color:var(--muted)">${g.val}/${g.max}</span></div>
+      <div class="progress-wrap"><div class="progress-bar" style="width:${Math.round(g.val/g.max*100)}%;background:var(--${g.color})"></div></div>
+    </div>`).join('');
+}
+
+// ========== INIT ==========
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('ev-date').value = today();
+  document.getElementById('fit-date').value = today();
+  document.getElementById('nut-date').value = today();
+  document.getElementById('body-date').value = today();
+  document.getElementById('task-due').value = today();
+  updateTimerDisplay();
+  renderOverview();
+  renderFocusStats();
+});
+</script>
+</body>
+</html>
